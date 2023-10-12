@@ -2,6 +2,17 @@ const express = require('express');
 const UserDBC = require('./UserDBC');
 const router = express.Router();
 
+router.post('/addUser', async (req, res) => {
+    try{
+        const user = req.body;
+        await UserDBC.insertUsers(user);
+        res.status(200).send('User added successfully.');
+    } catch (error){
+        console.error('Error added user', error.message);
+        res.status(500).send('Error adding user.');
+    }
+});
+
 router.get('/getUsers', async(req, res)=>{
     let res_get_users = {
         status_code:500,

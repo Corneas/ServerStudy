@@ -21,7 +21,20 @@ const getUsers = async () => {
     return rows;
 };
 
+const insertUsers = async (user) =>{
+    try{
+        const promisePool = pool.promise();
+        const [rows] = await promisePool.query('INSERT INTO users SET ?', user);
+        console.log('User inserted', rows);
+        return rows;
+    } catch (error) {
+        console.log('Error inserting user: ', error.message);
+        throw error;
+    }
+};
+
 module.exports =
 {
-    getUsers
+    getUsers,
+    insertUsers
 }
