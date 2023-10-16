@@ -1,21 +1,36 @@
 const express = require('express');
-const usersRouter = require('./UsersRouter');
+const db = require('./mysql.js');
 
 const app = express();
-const port = 5000;
+const conn = db.init();
+const port = 3030;
 
 app.use(express.json());
 
-app.use(`/Ranks`, usersRouter);
+app.get("/", (req, res)=>
+{
+    var sql = "Select * From Ranks";
+    conn.query(sql, function (err, result) {
+        if(err) console.error("query is not excuted : " + err);
+        else res.send(result);
+    });
+});
 
-// app.get('/', (req, res)=>
-// {
-//     res.send(`<h2>welcome to server</h2>`);
-// });
-
-app.get('/', (req, res) => {
-    
-})
+app.post('/score', (req, res) =>{
+    var body = req.body;  
+    var sql = "Select * from ranks";
+    conn.query(sql, (err, result) =>{
+        if(err) console.log("query is not excuted : " + err);
+        else{
+            var sql = "insert into ranks(Name, Score) Values(?,?)";
+            var param = [body.Name, body.Score];
+            conn.query(sql, param, (err) =>{
+                if(err) console.log("query is not excuted : " + err);
+                else res.sendStatus(200);
+            });
+        }
+    });
+});
 
 app.listen(port, ()=>
 {
