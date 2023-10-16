@@ -32,6 +32,22 @@ app.post('/score', (req, res) =>{
     });
 });
 
+app.post('/delete', (req, res) => {
+    var body = req.body;
+    var sql = "Select * from Ranks";
+    conn.query(sql, (err, result) => {
+        if(err) console.log("query is not excuted : " + err);
+        else{
+            var sql = "Delete From Ranks where Name = " + body.Name;
+
+            conn.query(sql, (err) => {
+                if(err) console.log("query is not excuted : " + err);
+                else res.sendStatus(200);
+            });
+        }
+    });
+});
+
 app.listen(port, ()=>
 {
     console.log(`SERVER 실행됨 ${port}`);
