@@ -59,12 +59,17 @@ app.post('/delete', (req, res) => {
     conn.query(deleteQuery, [Name], (err) =>{
         if(err) console.log("query is not excuted : " + err);
         else res.sendStatus(200);
-    })
+    });
 });
 
-app.post('/loadScoreByName', (req, res) => {
-    
-})
+app.get('/score/:Name', (req, res) => {
+    const findScoreByIdQuery = `Select Score From ${RANKS_TABLE} where Name = ?`;
+
+    conn.query(findScoreByIdQuery, [req.params.Name], (err, result) => {
+        if(err) console.log("query is not excuted : " + err);
+        else res.send({cmd : 1101, result});
+    });
+});
 
 app.listen(port, ()=>
 {
