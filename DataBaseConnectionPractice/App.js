@@ -7,6 +7,8 @@ const port = 3030;
 
 app.use(express.json());
 
+const RANKS_TABLE = 'Ranks';
+
 app.get("/", (req, res)=>
 {
     var sql = "Select * From Ranks";
@@ -17,57 +19,52 @@ app.get("/", (req, res)=>
 });
 
 app.post('/score', (req, res) =>{
-    var body = req.body;
+    const {Name, Score} = req.body;
 
-    // 중복체크
-    var sql = `select EXISTS (select Name from Ranks where Name = "${body.Name}" limit 1) as success`;
-    conn.query(sql, (err, result) => {
+    const checkDuplicateQuery = `SELECT EXISTS (SELECT Name FROM ${RANKS_TABLE} WHERE Name = ? LIMIT 1) AS success`;
+    const insertQuery = `INSERT INTO ${RANKS_TABLE} (Name, Score) VALUES (?, ?)`;
+    const updateQuery = `UPDATE ${RANKS_TABLE} SET Score = ? WHERE Name = ?`;   
+
+    conn.query(checkDuplicateQuery, [Name], (err, result) => {
         if(err) console.log("query is not excuted : " + err);
-        
-        // 만약 값이 0개라면
-        if(result[0].success == 0){
-            var sql = "Select * from ranks";
-            // 값 추가
-            conn.query(sql, (err, result) =>{
+
+        if(result[0].success === 0){
+            conn.query(insertQuery, [Name, Score], (err) => {
                 if(err) console.log("query is not excuted : " + err);
+                else res.sendStatus(200);
+            });
+        }
+        else{
+            conn.query(`Select Score From ${RANKS_TABLE} where Name = ?`, [Name], (err, rows) => {
+                if(err) console.log('query is not excuted : ' + err);
                 else{
-                    var sql = "insert into ranks(Name, Score) Values(?,?)";
-                    var param = [body.Name, body.Score];
-                    conn.query(sql, param, (err) =>{
-                        if(err) console.log("query is not excuted : " + err);
-                        else res.sendStatus(200);
-                    });
+                    const existingScore = rows[0].Score;
+                    if(existingScore < Score){
+                        conn.query(updateQuery, [Score], (err) => {
+                            if(err) console.log("query is not excuted : " + err);
+                            else res.sendStatus(200);
+                        });
+                    }
                 }
-            });   
+            });
         }
-        else{   // 만약 Name이 이미 존재한다면
-            // 업데이트
-            var sql = "select Score From Ranks Where Name = " + body.Name;
-            if(conn.query(sql) < body.Score){
-                var sql = "Update Ranks Set Score = " + body.Score + " Where Name = " + body.Name;
-                conn.query(sql);
-            }
-        }
-        
     });
 });
 
 // 값 제거
 app.post('/delete', (req, res) => {
-    var body = req.body;
-    var sql = "Select * from Ranks";
-    conn.query(sql, (err, result) => {
-        if(err) console.log("query is not excuted : " + err);
-        else{
-            var sql = "Delete From Ranks where Name = " + body.Name;
+    const {Name} = req.body;
+    const deleteQuery = `Delete From ${RANKS_TABLE} where Name = ?`;
 
-            conn.query(sql, (err) => {
-                if(err) console.log("query is not excuted : " + err);
-                else res.sendStatus(200);
-            });
-        }
-    });
+    conn.query(deleteQuery, [Name], (err) =>{
+        if(err) console.log("query is not excuted : " + err);
+        else res.sendStatus(200);
+    })
 });
+
+app.post('/loadScoreByName', (req, res) => {
+    
+})
 
 app.listen(port, ()=>
 {

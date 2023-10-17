@@ -5,7 +5,7 @@ var db_info = {
     port: "3000",           // 포트 주소
     user: "root",           // 로그인 계정
     password: "q1w2e3",     // 비밀번호
-    database: "study_db"    // 액세스할 데이터베이스
+    database: "threematch_ranking_db"    // 액세스할 데이터베이스
 };
 
 module.exports = {
